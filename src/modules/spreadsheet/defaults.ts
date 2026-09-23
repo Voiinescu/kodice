@@ -1,4 +1,5 @@
-import type { CellBorders, SpreadsheetCell, SpreadsheetFile } from '../../types/file'
+import type { CellBorders, CellValue, SpreadsheetCell, SpreadsheetFile } from '../../types/file'
+import { applyRecalc } from './engines/calc'
 import { literalValue } from './engines/cell'
 
 export const DEFAULT_ROWS = 50
@@ -25,8 +26,7 @@ export function createEmptySpreadsheet(config: SheetConfig = {}): Omit<Spreadshe
 export function createSampleSpreadsheet(): Omit<SpreadsheetFile, 'id' | 'createdAt' | 'updatedAt' | 'name' | 'type'> {
   const cells: Record<string, SpreadsheetCell> = {}
   const set = (ref: string, raw: string, format?: SpreadsheetCell['format']) => {
-    const lit = literalValue(raw)
-    const value = lit.ok ? lit.value : null
+    const value: CellValue = literalValue(raw)
     cells[ref] = { raw, value, format }
   }
 
@@ -63,7 +63,7 @@ export function createSampleSpreadsheet(): Omit<SpreadsheetFile, 'id' | 'created
   set('E6', '=CONTAR(B2:B6)', { align: 'center' })
   set('F6', '=MIN(C2:C6)', { align: 'right', numFmt: 'currency' })
 
-  return createEmptySpreadsheet({ rows: 30, cols: 12, cells })
+  return createEmptySpreadsheet({ rows: 30, cols: 12, cells: applyRecalc(cells, 30, 12) })
 }
 
 function allBorders(): CellBorders {

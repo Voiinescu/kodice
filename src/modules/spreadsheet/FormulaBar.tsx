@@ -5,13 +5,13 @@ import type { SpreadsheetController } from './useSpreadsheet'
 
 /** Barra de fórmulas: muestra la celda activa y permite editar su contenido. */
 export function FormulaBar({ ctrl }: { ctrl: SpreadsheetController }) {
-  const { selection, editing, state, toOriginal } = ctrl
+  const { selection, editing, state, toOriginal, collapsed } = ctrl
 
-  const activeOriginRow = selection.collapsed ? toOriginal(selection.row) : -1
+  const activeOriginRow = collapsed ? toOriginal(selection.row) : -1
   const activeRef =
     activeOriginRow >= 0
       ? coordsToRef(activeOriginRow, selection.col)
-      : selection.collapsed
+      : collapsed
         ? ''
         : `${coordsToRef(toOriginal(selection.row), selection.col)}:${coordsToRef(
             toOriginal(selection.row2),

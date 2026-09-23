@@ -504,7 +504,6 @@ const CellView = function CellView({
   text,
   format,
   selected,
-  isAnchor,
   isEditing,
   onMouseDown,
   onDoubleClick,

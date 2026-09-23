@@ -41,7 +41,7 @@ export default function SpreadsheetView() {
   // El hook recrearía estado si `file` cambiara de objeto; solo se monta una vez
   // y la persistencia usa una ref, evitando bucles.
   const controller = useSpreadsheet(
-    useMemo(() => file ?? (loadSheet(id) as SpreadsheetFile), [id]),
+    useMemo(() => file ?? (loadSheet(id) as SpreadsheetFile), [id, file]),
   )
 
   const persist = useMemo(() => {
@@ -68,7 +68,7 @@ export default function SpreadsheetView() {
       window.removeEventListener('beforeunload', flush)
       document.removeEventListener('visibilitychange', flush)
     }
-  }, [controller.state.file, persist])
+  }, [controller.state.file, persist, file])
 
   const rename = (name: string) => {
     if (!file) return

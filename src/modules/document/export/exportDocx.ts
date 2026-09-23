@@ -33,7 +33,7 @@ import {
   TextRun,
   UnderlineType,
   WidthType,
-  type IRun,
+  type ParagraphChild,
 } from 'docx'
 import { downloadBlob, sanitizeFileName } from '../../../utils/download'
 
@@ -96,10 +96,9 @@ function textRuns(text: string, style: RunStyleData): TextRun[] {
       text: segment,
       bold: style.bold,
       italics: style.italic,
-      underline: style.underline ? UnderlineType.single : undefined,
+      underline: style.underline ? { type: UnderlineType.SINGLE } : undefined,
       strike: style.strike,
       color: style.color,
-      highlight: style.highlight,
     })
     return i === 0 ? [run] : [new TextRun({ break: 1 }), run]
   })
@@ -140,7 +139,7 @@ const HEADING_MAP: Record<string, (typeof HeadingLevel)[keyof typeof HeadingLeve
 }
 
 /** Convierte un subárbol inline (texto, strong, span, a, img...) en runs. */
-function inlineRuns(node: Node, style: RunStyleData): IRun[] {
+function inlineRuns(node: Node, style: RunStyleData): ParagraphChild[] {
   if (node.nodeType === Node.TEXT_NODE) {
     return textRuns(node.textContent ?? '', style)
   }
@@ -165,7 +164,7 @@ function inlineRuns(node: Node, style: RunStyleData): IRun[] {
 
 function paragraphProps(
   el: Element,
-  children: IRun[],
+  children: ParagraphChild[],
   depth: number,
 ): ConstructorParameters<typeof Paragraph>[0] {
   const css = (el as HTMLElement).style

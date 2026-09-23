@@ -22,7 +22,7 @@ import {
   Undo2,
 } from 'lucide-react'
 import { ToolbarButton, ToolbarDivider, ToolbarGroupLabel } from '../../components/ui/ToolbarButton'
-import { Menu, MenuDivider, MenuItem, MenuLabel } from '../../components/ui/Menu'
+import { Menu, MenuItem, MenuLabel } from '../../components/ui/Menu'
 import { Modal } from '../../components/ui/Modal'
 import { BLOCK_LABELS } from './editor/editorCommands'
 import type { DocumentEditor } from './types'

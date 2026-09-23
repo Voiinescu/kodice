@@ -161,18 +161,31 @@ function evalIf(args: Expr[], ctx: EvalContext): CellValue {
   return evaluate(b ? args[1] : args[2], ctx)
 }
 
+/** Alias en español de las funciones (la UI usa nombres en español). */
+const FUNCTION_ALIASES: Record<string, string> = {
+  SUMA: 'SUM',
+  PROMEDIO: 'AVERAGE',
+  CONTAR: 'COUNT',
+  CONTARA: 'COUNTA',
+  REDONDEAR: 'ROUND',
+}
+
 /** Funciones agregadas/helpers. `values` ya está aplanado y libre de errores. */
 function applyAggregate(name: string, values: CellValue[]): CellValue {
-  const numbers = values.filter((v) => v.ok && typeof v.value === 'number').map((v) => v.value as number)
+  const fn = FUNCTION_ALIASES[name] ?? name
+  const numbers = values
+    .filter((v): v is CellValue & { ok: true; value: number } => v.ok && typeof v.value === 'number')
+    .map((v) => v.value)
   const numericError = values.find((v) => !v.ok)
 
   const requireNumeric = (): number | CellValue => {
-    if (values.length === 0 || values[0].ok !== true) return err(ERRORS.VALUE)
-    const n = toNumber(values[0].value)
+    const first = values[0]
+    if (!first || !first.ok) return err(ERRORS.VALUE)
+    const n = toNumber(first.value)
     return n === null ? err(ERRORS.VALUE) : n
   }
 
-  switch (name) {
+  switch (fn) {
     case 'SUM':
       if (numericError) return numericError
       return num(numbers.reduce((acc, n) => acc + n, 0))
@@ -196,26 +209,27 @@ function applyAggregate(name: string, values: CellValue[]): CellValue {
     case 'ROUND': {
       const n = requireNumeric()
       if (typeof n !== 'number') return n
-      const digits = values[1] && toNumber(values[1].value)
-      if (digits === null || digits === undefined) return err(ERRORS.VALUE)
+      const digitsVal = values[1]
+      const digits = digitsVal && digitsVal.ok ? toNumber(digitsVal.value) : null
+      if (digits === null) return err(ERRORS.VALUE)
       const factor = Math.pow(10, digits)
       return num(Math.round(n * factor) / factor)
     }
     case 'LEN':
-      return num(scalarText(values[0]?.value ?? null).length)
+      return num(scalarText(values[0] && values[0].ok ? values[0].value : null).length)
     case 'UPPER':
-      return str(scalarText(values[0]?.value ?? null).toUpperCase())
+      return str(scalarText(values[0] && values[0].ok ? values[0].value : null).toUpperCase())
     case 'LOWER':
-      return str(scalarText(values[0]?.value ?? null).toLowerCase())
+      return str(scalarText(values[0] && values[0].ok ? values[0].value : null).toLowerCase())
     case 'PI':
       return num(Math.PI)
     case 'AND': {
-      const bs = values.map((v) => toBoolean(v.value))
+      const bs = values.map((v) => (v.ok ? toBoolean(v.value) : null))
       if (bs.some((b) => b === null)) return err(ERRORS.VALUE)
       return bool((bs as boolean[]).reduce((acc, b) => acc && b, true))
     }
     case 'OR': {
-      const bs = values.map((v) => toBoolean(v.value))
+      const bs = values.map((v) => (v.ok ? toBoolean(v.value) : null))
       if (bs.some((b) => b === null)) return err(ERRORS.VALUE)
       return bool((bs as boolean[]).reduce((acc, b) => acc || b, false))
     }
@@ -239,7 +253,7 @@ export function evaluate(expr: Expr, ctx: EvalContext): CellValue {
       return cells[0] ?? { ok: true, value: null }
     }
     case 'fn': {
-      if (expr.name === 'IF') return evalIf(expr.args, ctx)
+      if (expr.name === 'IF' || expr.name === 'SI') return evalIf(expr.args, ctx)
       return applyAggregate(expr.name, collect(expr.args, ctx))
     }
     case 'binary':

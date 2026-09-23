@@ -109,6 +109,35 @@ export function useDocumentEditor(initialHtml: string, { onHtmlChange }: UseDocu
     return result
   }, [])
 
+  const refreshActiveState = useCallback(() => {
+    if (!document.activeElement || !editorRef.current?.contains(document.activeElement)) return
+    const next: EditorToolbarState = {
+      bold: queryFormatState('bold'),
+      italic: queryFormatState('italic'),
+      underline: queryFormatState('underline'),
+      strike: queryFormatState('strikeThrough'),
+      orderedList: queryFormatState('insertOrderedList'),
+      unorderedList: queryFormatState('insertUnorderedList'),
+      blockquote: false,
+      code: false,
+      align: 'left',
+      block: queryFormatValue('formatBlock') || 'p',
+    }
+    if (next.block === 'blockquote') next.blockquote = true
+    if (next.block === 'pre') next.code = true
+    if (queryFormatState('justifyLeft')) next.align = 'left'
+    else if (queryFormatState('justifyCenter')) next.align = 'center'
+    else if (queryFormatState('justifyRight')) next.align = 'right'
+    else if (queryFormatState('justifyFull')) next.align = 'justify'
+
+    setToolbar((prev) => {
+      const changed = (Object.keys(next) as (keyof EditorToolbarState)[]).some(
+        (k) => prev[k] !== next[k],
+      )
+      return changed ? next : prev
+    })
+  }, [])
+
   /** Aplica una operación al editor registrando el estado previo en el historial. */
   const applyOperation = useCallback(
     (op: () => void) => {
@@ -150,35 +179,6 @@ export function useDocumentEditor(initialHtml: string, { onHtmlChange }: UseDocu
     syncHtml(currentHtmlRef.current)
     refreshFlags()
   }, [renderHtml, syncHtml, refreshFlags])
-
-  const refreshActiveState = useCallback(() => {
-    if (!document.activeElement || !editorRef.current?.contains(document.activeElement)) return
-    const next: EditorToolbarState = {
-      bold: queryFormatState('bold'),
-      italic: queryFormatState('italic'),
-      underline: queryFormatState('underline'),
-      strike: queryFormatState('strikeThrough'),
-      orderedList: queryFormatState('insertOrderedList'),
-      unorderedList: queryFormatState('insertUnorderedList'),
-      blockquote: false,
-      code: false,
-      align: 'left',
-      block: queryFormatValue('formatBlock') || 'p',
-    }
-    if (next.block === 'blockquote') next.blockquote = true
-    if (next.block === 'pre') next.code = true
-    if (queryFormatState('justifyLeft')) next.align = 'left'
-    else if (queryFormatState('justifyCenter')) next.align = 'center'
-    else if (queryFormatState('justifyRight')) next.align = 'right'
-    else if (queryFormatState('justifyFull')) next.align = 'justify'
-
-    setToolbar((prev) => {
-      const changed = (Object.keys(next) as (keyof EditorToolbarState)[]).some(
-        (k) => prev[k] !== next[k],
-      )
-      return changed ? next : prev
-    })
-  }, [])
 
   const insertImage = useCallback(
     (file: File) => {

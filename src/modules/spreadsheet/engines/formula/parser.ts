@@ -126,7 +126,7 @@ class Parser {
   private parseFunction(name: string): Expr {
     this.expect('(')
     const args: Expr[] = []
-    while (this.peek() && this.peek()!.type === 'op' && this.peek()!.value !== ')') {
+    while (this.peek() && !(this.peek()!.type === 'op' && this.peek()!.value === ')')) {
       args.push(this.expression(0))
       const sep = this.peek()
       if (sep?.type === 'op' && sep.value === ',') {

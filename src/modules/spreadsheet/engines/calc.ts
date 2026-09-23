@@ -65,7 +65,7 @@ export function applyRecalc(
 ): Record<string, SpreadsheetCell> {
   const values = recalculate(cells, rows, cols)
   const next: Record<string, SpreadsheetCell> = { ...cells }
-  for (const key of Object.keys(values)) {
+  for (const key of values.keys()) {
     const cell = next[key]
     if (cell) next[key] = { ...cell, value: values.get(key) as CellValue }
   }
