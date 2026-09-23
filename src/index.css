@@ -1,0 +1,240 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  font-family: theme('fontFamily.sans');
+}
+.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
+
+/* Scrollbars discretas */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.4) transparent;
+}
+
+@layer components {
+  /*
+    Contenido tipográfico del editor (contenteditable) y de la vista de impresión.
+    Usa variables CSS para adaptarse al tema claro/oscuro.
+  */
+  .doc-content {
+    --doc-fg: #1e293b;
+    --doc-muted: #64748b;
+    --doc-border: #e2e8f0;
+    --doc-link: #4338ca;
+    --doc-code-bg: #f1f5f9;
+    --doc-table-head: #f8fafc;
+    --doc-selection: rgba(79, 70, 229, 0.2);
+    color: var(--doc-fg);
+    font-size: 15px;
+    line-height: 1.65;
+    word-wrap: break-word;
+  }
+  .dark .doc-content {
+    --doc-fg: #e2e8f0;
+    --doc-muted: #94a3b8;
+    --doc-border: #334155;
+    --doc-link: #a5b4fc;
+    --doc-code-bg: #1e293b;
+    --doc-table-head: #1e293b;
+  }
+
+  .doc-content ::selection {
+    background: var(--doc-selection);
+  }
+
+  .doc-content p {
+    margin: 0.4em 0;
+    min-height: 1.3em;
+  }
+
+  .doc-content h1 {
+    font-size: 1.9em;
+    line-height: 1.25;
+    font-weight: 700;
+    margin: 0.9em 0 0.45em;
+  }
+  .doc-content h2 {
+    font-size: 1.5em;
+    font-weight: 650;
+    margin: 0.8em 0 0.4em;
+  }
+  .doc-content h3 {
+    font-size: 1.22em;
+    font-weight: 600;
+    margin: 0.7em 0 0.35em;
+  }
+  .doc-content h4 {
+    font-size: 1.05em;
+    font-weight: 600;
+    margin: 0.6em 0 0.3em;
+    color: var(--doc-muted);
+  }
+
+  .doc-content ul,
+  .doc-content ol {
+    margin: 0.4em 0 0.4em 1.4em;
+  }
+  .doc-content ul {
+    list-style: disc;
+  }
+  .doc-content ol {
+    list-style: decimal;
+  }
+  .doc-content li {
+    margin: 0.18em 0;
+  }
+  .doc-content li > ul,
+  .doc-content li > ol {
+    margin-bottom: 0;
+  }
+
+  .doc-content blockquote {
+    margin: 0.7em 0;
+    padding: 0.3em 0 0.3em 1em;
+    border-left: 3px solid var(--doc-border);
+    color: var(--doc-muted);
+    font-style: italic;
+  }
+
+  .doc-content a {
+    color: var(--doc-link);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--doc-link) 45%, transparent);
+    text-underline-offset: 2px;
+  }
+
+  .doc-content code {
+    font-family: theme('fontFamily.mono');
+    font-size: 0.86em;
+    background: var(--doc-code-bg);
+    border: 1px solid var(--doc-border);
+    border-radius: 4px;
+    padding: 0.08em 0.34em;
+  }
+  .doc-content pre {
+    margin: 0.7em 0;
+    padding: 0.8em 1em;
+    background: var(--doc-code-bg);
+    border: 1px solid var(--doc-border);
+    border-radius: 8px;
+    font-family: theme('fontFamily.mono');
+    font-size: 0.86em;
+    overflow-x: auto;
+  }
+  .doc-content pre code {
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  .doc-content table {
+    border-collapse: collapse;
+    margin: 0.9em 0;
+    width: 100%;
+    font-size: 0.92em;
+  }
+  .doc-content th,
+  .doc-content td {
+    border: 1px solid var(--doc-border);
+    padding: 0.45em 0.7em;
+    text-align: left;
+    vertical-align: top;
+  }
+  .doc-content th {
+    background: var(--doc-table-head);
+    font-weight: 600;
+  }
+
+  .doc-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .doc-content hr {
+    border: none;
+    border-top: 1px solid var(--doc-border);
+    margin: 1.4em 0;
+  }
+
+  .doc-content[contenteditable] {
+    outline: none;
+  }
+  .doc-content[contenteditable]:empty::before {
+    content: 'Escribe aquí…';
+    color: var(--doc-muted);
+    opacity: 0.6;
+  }
+
+  /* ---- Hoja de cálculo ---- */
+  .corner-header {
+    @apply shrink-0 border-b border-r border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800;
+  }
+  .col-header {
+    @apply relative shrink-0 cursor-default select-none border-b border-r border-slate-200 bg-slate-50 text-center dark:border-slate-700 dark:bg-slate-800;
+    height: 28px;
+    line-height: 28px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgb(100 116 139);
+  }
+  .col-header-label {
+    @apply inline-block align-middle;
+  }
+  .col-resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+  }
+  .col-resizer:hover {
+    background: rgb(99 102 241 / 0.5);
+  }
+  .row-header {
+    @apply absolute select-none border-b border-r border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400;
+    width: 48px;
+    left: 0;
+    font-size: 11px;
+    text-align: center;
+    line-height: 28px;
+  }
+  .row-header:hover {
+    @apply bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100;
+  }
+  .sheet-cell {
+    @apply absolute select-none overflow-hidden border-b border-r border-slate-200/70 bg-white px-1.5 dark:border-slate-700/70 dark:bg-slate-900;
+    font-size: 13px;
+    line-height: 26px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .fill-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgb(79 70 229);
+    border: 1px solid #fff;
+    cursor: crosshair;
+    z-index: 20;
+  }
+}
