@@ -40,11 +40,13 @@ export function SpreadsheetToolbar({ ctrl }: { ctrl: SpreadsheetController }) {
 
   const apply = (patch: Parameters<SpreadsheetController['setFormat']>[0]) => ctrl.setFormat(patch)
 
+  const activeFormat = selectionCellsFormat(ctrl)
+
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-white/95 px-2 py-1.5 backdrop-blur sm:px-3 dark:border-slate-800 dark:bg-slate-900/95">
       <ToolbarGroupLabel>Fuente</ToolbarGroupLabel>
-      <ToolbarButton icon={<Bold className="h-4 w-4" />} label="Negrita" active={false} disabled={!hasTarget} onClick={() => apply({ bold: true })} />
-      <ToolbarButton icon={<Italic className="h-4 w-4" />} label="Cursiva" disabled={!hasTarget} onClick={() => apply({ italic: true })} />
+      <ToolbarButton icon={<Bold className="h-4 w-4" />} label="Negrita" active={activeFormat?.bold === true} disabled={!hasTarget} onClick={() => apply({ bold: !activeFormat?.bold })} />
+      <ToolbarButton icon={<Italic className="h-4 w-4" />} label="Cursiva" active={activeFormat?.italic === true} disabled={!hasTarget} onClick={() => apply({ italic: !activeFormat?.italic })} />
       <ColorField label="Color de texto" value={undefined} onChange={(c) => apply({ color: c })} />
       <ColorField label="Color de relleno" twoTone value={undefined} onChange={(c) => apply({ backColor: c })} />
       <ToolbarDivider />
@@ -217,6 +219,13 @@ function FilterPanel({
       </div>
     </>
   )
+}
+
+function selectionCellsFormat(ctrl: SpreadsheetController) {
+  const first = ctrl.selectionCells[0]
+  if (!first) return undefined
+  const cell = ctrl.state.file.cells[coordsToRef(ctrl.toOriginal(first.row), first.col).toUpperCase()]
+  return cell?.format
 }
 
 function selectionCellsFmt(ctrl: SpreadsheetController): 'general' | 'number' | 'currency' | 'percent' | null {

@@ -21,8 +21,10 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - El parser rechazaba funciones sin argumentos y no podía leer el primer argumento cuando era una expresión simple.
 - Faltaban alias en español para varias funciones; se añadieron `SUMA`, `PROMEDIO`, `CONTAR`, `CONTARA` y `REDONDEAR`.
 - Importaciones relativas incorrectas en varios módulos de hoja de cálculo y del editor (fallos de `tsc`).
-- Errores de tipos en la exportación DOCX (ejecución de ejecución de texto, subrayado y niveles de lista) y en `exportPdf`.
+- Errores de tipos en la exportación DOCX (ejecución de texto, subrayado y niveles de lista) y en `exportPdf`.
 - `createNewFile` no escribía el discriminador `type` en los registros guardados.
+- El botón **Justificar** de alineación no estaba accesible en la barra del editor de texto (el motor ya lo soportaba).
+- Los botones **Negrita / Cursiva** de la hoja de cálculo no reflejaban el estado activo de la celda seleccionada (siempre aparecían inactivos).
 
 ### Notas técnicas
 - El despliegue de la build supera los 500 kB de JS (componente único); se puede reducir con *chunking* manual si se desea.

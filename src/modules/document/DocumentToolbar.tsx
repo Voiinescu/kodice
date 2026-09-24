@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import {
   AlignCenter,
+  AlignJustify,
   AlignLeft,
   AlignRight,
   Bold,
@@ -206,6 +207,12 @@ export function DocumentToolbar({ editor }: { editor: DocumentEditor }) {
         label="Alinear a la derecha"
         active={editor.toolbar.align === 'right'}
         onClick={() => editor.setAlign('right')}
+      />
+      <ToolbarButton
+        icon={<AlignJustify className="h-4 w-4" />}
+        label="Justificar"
+        active={editor.toolbar.align === 'justify'}
+        onClick={() => editor.setAlign('justify')}
       />
       <ToolbarButton
         icon={<List className="h-4 w-4" />}
