@@ -148,7 +148,7 @@ export default function SpreadsheetView() {
           {controller.state.file.rows} filas · {controller.state.file.cols} columnas
         </span>
         {activeCellRef && <span className="font-mono">{activeCellRef}</span>}
-        <span className="hidden sm:inline">Doble clic para editar · Ctrl+C/V copiar/pegar · arrastra la esquina para rellenar</span>
+        <span className="hidden sm:inline">Doble clic para editar · Ctrl+Z deshacer · Ctrl+C/V copiar/pegar · arrastra la esquina para rellenar</span>
       </footer>
     </div>
   )

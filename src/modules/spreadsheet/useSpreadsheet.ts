@@ -6,7 +6,7 @@
 import { useCallback, useMemo, useReducer, useState } from 'react'
 import type { CellCoords, SpreadsheetFile } from '../../types/file'
 import { getFile } from '../../utils/storage'
-import { sheetReducer, type SheetState } from './state/reducer'
+import { initSheetHistory, sheetHistoryReducer, type SheetState } from './state/reducer'
 import type { CellWrite } from './engines/cellTransform'
 import type { CellFormat } from '../../types/file'
 import { coordsToRef } from './engines/cellRef'
@@ -33,10 +33,18 @@ export function loadSpreadsheet(id: string): SpreadsheetFile | null {
 }
 
 export function useSpreadsheet(file: SpreadsheetFile) {
-  const [state, dispatch] = useReducer(sheetReducer, undefined, () => stateFromPersisted(file))
+  // El reducer de historial envuelve el puro: mantiene `past`/`present`/`future`
+  // y expone las acciones 'undo'/'redo'. `state` siempre es el estado vigente.
+  const [history, dispatch] = useReducer(sheetHistoryReducer, undefined, () => initSheetHistory(stateFromPersisted(file)))
+  const state = history.present
   const [anchor, setAnchor] = useState<CellCoords>({ row: 0, col: 0 })
   const [focus, setFocus] = useState<CellCoords>({ row: 0, col: 0 })
   const [editing, setEditing] = useState<EditableCell | null>(null)
+
+  const canUndo = history.past.length > 0
+  const canRedo = history.future.length > 0
+  const undo = useCallback(() => dispatch({ type: 'undo' }), [])
+  const redo = useCallback(() => dispatch({ type: 'redo' }), [])
 
   const rowOrder = state.rowOrder
   const displayRows = rowOrder ? rowOrder.length : state.file.rows
@@ -95,12 +103,16 @@ export function useSpreadsheet(file: SpreadsheetFile) {
     if (!editing) return
     const { row, col, text } = editing
     setEditing(null)
-    dispatch({ type: 'setCell', row, col, raw: text })
+    // No registrar pasos de historial cuando el valor no cambió (p. ej. Enter a secas).
+    const key = coordsToRef(row, col).toUpperCase()
+    if (state.file.cells[key]?.raw !== text) {
+      dispatch({ type: 'setCell', row, col, raw: text })
+    }
     // al confirmar, volvemos la selección a la celda editada
     const disp = toDisplay(row)
     setAnchor({ row: disp, col })
     setFocus({ row: disp, col })
-  }, [editing, toDisplay])
+  }, [editing, state.file.cells, toDisplay])
 
   const cancelEdit = useCallback(() => setEditing(null), [])
 
@@ -161,6 +173,10 @@ export function useSpreadsheet(file: SpreadsheetFile) {
     commitEdit,
     cancelEdit,
     editAt,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
     selection,
     selectionCells,
     hasSelection,

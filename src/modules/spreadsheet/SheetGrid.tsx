@@ -265,6 +265,12 @@ export function SheetGrid({ ctrl }: { ctrl: SpreadsheetController }) {
     if (e.key === 'ArrowLeft') return moveFocus(0, -1, e.shiftKey)
     if (e.key === 'Enter') return moveFocus(1, 0, false)
     if (e.key === 'Tab') return moveFocus(0, 1, false)
+    if (mod && (e.key === 'z' || e.key === 'Z' || e.key === 'y' || e.key === 'Y')) {
+      e.preventDefault()
+      if (e.shiftKey || e.key === 'y' || e.key === 'Y') ctrl.redo()
+      else ctrl.undo()
+      return
+    }
     if (mod && (e.key === 'c' || e.key === 'C')) {
       e.preventDefault()
       copySelection(false)

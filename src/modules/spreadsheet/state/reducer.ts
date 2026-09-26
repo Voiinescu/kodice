@@ -41,6 +41,8 @@ export type SheetAction =
   | { type: 'clearFilter' }
   | { type: 'rename'; name: string }
 
+export type HistoryAction = { type: 'undo' } | { type: 'redo' }
+
 const emptyCell = (): SpreadsheetCell => ({ raw: '', value: { ok: true, value: null } })
 
 const identity = (size: number): number[] => Array.from({ length: size }, (_, i) => i)
@@ -54,9 +56,14 @@ function recalcFile(file: SpreadsheetFile): SpreadsheetFile {
 function applyWrites(state: SheetState, writes: CellWrite[]): SheetState {
   if (writes.length === 0) return state
   const cells: Record<string, SpreadsheetCell> = { ...state.file.cells }
+  let changed = false
   for (const w of writes) {
     const key = keyOf(w.row, w.col)
     const previous = cells[key]
+    // Escritura sin impacto (mismo raw): se omite para no manchar el historial
+    // ni provocar nuevos objetos. Un cambio de formato se dispara con 'setFormat'.
+    if (previous && previous.raw === w.raw) continue
+    changed = true
     if (w.raw === '' && !w.format) {
       cells[key] = emptyCell()
       continue
@@ -67,7 +74,7 @@ function applyWrites(state: SheetState, writes: CellWrite[]): SheetState {
       format: w.format ?? previous?.format,
     }
   }
-  return { ...state, file: recalcFile({ ...state.file, cells }) }
+  return changed ? { ...state, file: recalcFile({ ...state.file, cells }) } : state
 }
 
 function applyFormat(state: SheetState, patch: Partial<CellFormat>, coords: CellCoords[]): SheetState {
@@ -98,10 +105,15 @@ export function sheetReducer(state: SheetState, action: SheetAction): SheetState
       const coords = action.coords
       if (coords.length === 0) return state
       const cells: Record<string, SpreadsheetCell> = { ...state.file.cells }
+      let changed = false
       for (const c of coords) {
-        cells[keyOf(c.row, c.col)] = emptyCell()
+        const key = keyOf(c.row, c.col)
+        if (cells[key]?.raw !== '' || cells[key]?.format) {
+          cells[key] = emptyCell()
+          changed = true
+        }
       }
-      return { ...state, file: recalcFile({ ...state.file, cells }) }
+      return changed ? { ...state, file: recalcFile({ ...state.file, cells }) } : state
     }
 
     case 'setColWidth': {
@@ -149,3 +161,82 @@ export function sheetReducer(state: SheetState, action: SheetAction): SheetState
 }
 
 export { applyWrites, applyFormat }
+
+// ---------------------------------------------------------------------------
+// Historial de deshacer/rehacer.
+//
+// La vista ordenada (`rowOrder`), el filtro y los datos viven juntos en
+// `SheetState`, así que una "foto" (snapshot) por acción captura todo por igual.
+// Estrategia:
+//  - Cada snapshot guarda el estado ANTERIOR a la acción (pila `past`), como
+//    en el editor de texto: deshacer vuelve al último estado registrado.
+//  - `future` guarda los estados re-insertados al deshacer, para poder rehacer.
+//  - Al aplicar cualquier cambio nuevo (sea o no deshacible) se vacía `future`,
+//    porque la rama de acciones previas queda invalidada.
+//  - `setColWidth` se lanza repetidamente durante el arrastre del borde, y
+//    `rename` toca metadatos del título; ambos se excluyen del historial.
+// ---------------------------------------------------------------------------
+
+export const SHEET_HISTORY_LIMIT = 100
+
+export interface SheetHistory {
+  past: SheetState[]
+  present: SheetState
+  future: SheetState[]
+}
+
+export function initSheetHistory(state: SheetState): SheetHistory {
+  return { past: [], present: state, future: [] }
+}
+
+const UNDOABLE_ACTIONS: ReadonlySet<SheetAction['type']> = new Set([
+  'setCell',
+  'writeCells',
+  'setFormat',
+  'clearRange',
+  'addRows',
+  'addCols',
+  'sortCol',
+  'setFilter',
+  'clearFilter',
+])
+
+function isUndoable(action: SheetAction): boolean {
+  return UNDOABLE_ACTIONS.has(action.type)
+}
+
+/** Reducer que envuelve `sheetReducer` añadiendo snapshots para deshacer/rehacer. */
+export function sheetHistoryReducer(history: SheetHistory, action: SheetAction | HistoryAction): SheetHistory {
+  if (action.type === 'undo') {
+    if (history.past.length === 0) return history
+    const previous = history.past[history.past.length - 1]
+    return {
+      past: history.past.slice(0, -1),
+      present: previous,
+      future: [history.present, ...history.future].slice(0, SHEET_HISTORY_LIMIT),
+    }
+  }
+
+  if (action.type === 'redo') {
+    if (history.future.length === 0) return history
+    const next = history.future[0]
+    return {
+      past: [...history.past, history.present].slice(-SHEET_HISTORY_LIMIT),
+      present: next,
+      future: history.future.slice(1),
+    }
+  }
+
+  const present = sheetReducer(history.present, action)
+  // Reducer devuelve la misma referencia en acciones sin efecto real (p. ej.
+  // escritura vacía); no la registramos en el historial.
+  if (present === history.present) return history
+
+  if (!isUndoable(action)) {
+    return { past: history.past, present, future: [] }
+  }
+
+  const past = [...history.past, history.present]
+  if (past.length > SHEET_HISTORY_LIMIT) past.shift()
+  return { past, present, future: [] }
+}

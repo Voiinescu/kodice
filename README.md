@@ -65,6 +65,7 @@ El proyecto combina dos piezas que suelen ser territorio de librerías pesadas �
 - **Ancho de columna** ajustable arrastrando el borde.
 - **Ordenar** ascendente / descendente y **filtrar** por valores de columna.
 - Selección múltiple, **copiar / pegar** (interno y portapapeles del sistema) y **relleno inteligente** (*fill handle*) que desplaza referencias relativas.
+- **Deshacer / rehacer** (`Ctrl+Z` / `Ctrl+Shift+Z`) con historial de hasta 100 acciones, disponible en barra y teclado.
 - Exportar a **.xlsx** (`xlsx`), **.csv** y **.json**.
 
 ### General
@@ -97,8 +98,8 @@ Pasos:
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/<tu-usuario>/folio.git
-cd folio
+git clone https://github.com/Voiinescu/kodice.git
+cd kodice
 
 # 2. Instalar dependencias
 npm install

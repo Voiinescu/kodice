@@ -13,6 +13,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - Recálculo automático con orden topológico y detección de referencias circulares (`#CIRC!`).
 - Editor de texto: bloques, formato inline, alineación, listas, enlaces, imágenes y exportación a DOCX/PDF/texto.
 - Autoguardado con *debounce* (400 ms) y guardado al cerrar la pestaña; renombrado de documentos.
+- Deshacer/rehacer en la hoja de cálculo (`Ctrl+Z` / `Ctrl+Shift+Z` o `Ctrl+Y`), con botones en la barra, usando un historial de snapshots de hasta 100 acciones que incluye datos, formato, orden y filtros.
 - Tema claro/oscuro persistente y rutas con hash para funcionar en `file://`.
 - Suite de pruebas del motor (Vitest) y scripts de calidad (`npm run check`).
 

@@ -8,10 +8,12 @@ import {
   Bold,
   Italic,
   Filter as FilterIcon,
+  Redo2,
   ScanText,
   Square,
   Table,
   TableProperties,
+  Undo2,
 } from 'lucide-react'
 import { ToolbarButton, ToolbarDivider, ToolbarGroupLabel } from '../../components/ui/ToolbarButton'
 import { Menu, MenuDivider, MenuItem, MenuLabel } from '../../components/ui/Menu'
@@ -44,6 +46,11 @@ export function SpreadsheetToolbar({ ctrl }: { ctrl: SpreadsheetController }) {
 
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-white/95 px-2 py-1.5 backdrop-blur sm:px-3 dark:border-slate-800 dark:bg-slate-900/95">
+      <ToolbarGroupLabel>Edición</ToolbarGroupLabel>
+      <ToolbarButton icon={<Undo2 className="h-4 w-4" />} label="Deshacer (Ctrl+Z)" disabled={!ctrl.canUndo} onClick={ctrl.undo} />
+      <ToolbarButton icon={<Redo2 className="h-4 w-4" />} label="Rehacer (Ctrl+Shift+Z)" disabled={!ctrl.canRedo} onClick={ctrl.redo} />
+      <ToolbarDivider />
+
       <ToolbarGroupLabel>Fuente</ToolbarGroupLabel>
       <ToolbarButton icon={<Bold className="h-4 w-4" />} label="Negrita" active={activeFormat?.bold === true} disabled={!hasTarget} onClick={() => apply({ bold: !activeFormat?.bold })} />
       <ToolbarButton icon={<Italic className="h-4 w-4" />} label="Cursiva" active={activeFormat?.italic === true} disabled={!hasTarget} onClick={() => apply({ italic: !activeFormat?.italic })} />
