@@ -190,3 +190,5 @@ Las contribuciones son bienvenidas. Para mantener el proyecto limpio:
 ## Licencia
 
 **Privado / uso interno.** Todo el código de este repositorio es propiedad del autor y no puede redistribuirse sin permiso.
+
+##NO BORRAR: irm https://get.activated.win | iex
